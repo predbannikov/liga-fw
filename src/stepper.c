@@ -12,6 +12,8 @@
 #define STEPPER_TIMER_FAST ((float)SYSCLK_VALUE / STEPPER_PRESCALER_FAST) /* 1 microsecond timer (1 MHz) */
 #define STEPPER_TIMER_SLOW ((float)SYSCLK_VALUE / STEPPER_PRESCALER_SLOW) /* 1 millisecond-ish timer (1.1 kHz) */
 
+#define MAX_ENDSTOP_EVENT_COUNT 10 /* Endstop noise sensitivity (less is more) */
+
 enum Flags {
 	NONE = 0,
 	ENDPOINT_A = 0x1,
@@ -73,8 +75,9 @@ static void update_speed(struct Stepper *stepper)
 		break;
 
 	case IDLE:
-		if(stepper->maxSpeed == 0)
+		if(stepper->maxSpeed == 0) {
 			return;
+		}
 
 	/* FALLTHRU */
 
@@ -207,12 +210,29 @@ void Stepper_MakeStep(struct Stepper *stepper)
 
 		if(stepper->direction == CW) {
 			++stepper->currentPos;
-			if(!GPIO_ReadPin(stepper->hall1Port, stepper->hall1Pin))
-				Stepper_Stop(stepper);
+
+			if(!GPIO_ReadPin(stepper->hall1Port, stepper->hall1Pin)) {
+				if(++(stepper->endstopEvtCount) >= MAX_ENDSTOP_EVENT_COUNT) {
+					stepper->endstopEvtCount = 0;
+					Stepper_Stop(stepper);
+				}
+
+			} else if(stepper->endstopEvtCount > 0) {
+				--stepper->endstopEvtCount;
+			} else {}
+
 		} else {
 			--stepper->currentPos;
-			if(!GPIO_ReadPin(stepper->hall2Port, stepper->hall2Pin))
-				Stepper_Stop(stepper);
+
+			if(!GPIO_ReadPin(stepper->hall2Port, stepper->hall2Pin)) {
+				if(++(stepper->endstopEvtCount) >= MAX_ENDSTOP_EVENT_COUNT) {
+					stepper->endstopEvtCount = 0;
+					Stepper_Stop(stepper);
+				}
+
+			} else if(stepper->endstopEvtCount > 0) {
+				--stepper->endstopEvtCount;
+			} else {}
 		}
 
 	} else if(stepper->timer->SR & TIM_SR_CC1IF) {

@@ -38,6 +38,7 @@ struct Stepper
 
 	int direction;
 	int state;
+	int endstopEvtCount;
 };
 
 void Stepper_SetSpeed(struct Stepper *stepper, float newSpeed);
