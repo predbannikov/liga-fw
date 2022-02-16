@@ -9,6 +9,8 @@
 
 #define DMA_BUFFER_LENGTH (SDADC_MAX_CHANNELS * SDADC_AVERAGE_FACTOR)
 
+#define VALUE_CORRECTION 0x8000U
+
 static uint16_t dmaBuffer[SDADC_COUNT][DMA_BUFFER_LENGTH];
 
 static inline uint16_t* get_dma_buffer(SDADC_TypeDef *sdadc)
@@ -128,5 +130,5 @@ unsigned int SDADC_ReadDmaAverage(struct SDADC *hSdadc, unsigned int channel)
 		sum += dmaBuf[index];
 	}
 
-	return (uint16_t)(sum / SDADC_AVERAGE_FACTOR + 0x8000U);
+	return (uint16_t)(sum / SDADC_AVERAGE_FACTOR + VALUE_CORRECTION);
 }
