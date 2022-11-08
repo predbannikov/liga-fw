@@ -1,3 +1,9 @@
 Debug
 Release
 .settings
+LIGA.launch
+LIGA_converter.log
+.cproject_org
+.project_org
+.project
+.cproject

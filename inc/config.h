@@ -18,16 +18,16 @@
 /* Volumeter coefficients */
 #define VOLUM_CTRL_KP 0.008f
 #define VOLUM_CTRL_KD 0.2f
-#define VOLUM_CLAMP_SPEED  300.0f
-#define VOLUM_ERROR_MARGIN 3000.0f
+#define VOLUM_CLAMP_SPEED  14000.0f
+#define VOLUM_ERROR_MARGIN 4000.0f
 #define VOLUM_ACCEL_FREE   10000.0f
 #define VOLUM_ACCEL_LOCKED 3000.0f
 
 /* Load frame coefficients */
 #define LOAD_CTRL_KP 0.3f
 #define LOAD_CTRL_KD 3.0f
-#define LOAD_CLAMP_SPEED  2000.0f
-#define LOAD_ERROR_MARGIN 5.0f
+#define LOAD_CLAMP_SPEED  35000.0f
+#define LOAD_ERROR_MARGIN 7.0f
 #define LOAD_ACCEL_FREE   10000.0f
 #define LOAD_ACCEL_LOCKED 5000.0f
 
