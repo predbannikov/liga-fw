@@ -7,3 +7,5 @@ LIGA_converter.log
 .project_org
 .project
 .cproject
+.metadata
+LIGA Debug.launch
