@@ -3,7 +3,7 @@
 
 #include "stm32f3xx.h"
 
-#define STEPPER_SLOWEST_SPEED 50
+#define STEPPER_SLOWEST_SPEED 1000
 
 struct Stepper
 {
