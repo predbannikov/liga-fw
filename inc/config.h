@@ -16,16 +16,16 @@
 #define USART_BAUDRATE 115200U /* Baud rate for serial communication */
 
 /* Volumeter coefficients */
-#define VOLUM_CTRL_KP 0.008f
-#define VOLUM_CTRL_KD 0.2f
+#define VOLUM_CTRL_KP 0.02f
+#define VOLUM_CTRL_KD 0.15f
 #define VOLUM_CLAMP_SPEED  14000.0f
 #define VOLUM_ERROR_MARGIN 7000.0f
 #define VOLUM_ACCEL_FREE   10000.0f
 #define VOLUM_ACCEL_LOCKED 3000.0f
 
 /* Load frame coefficients */
-#define LOAD_CTRL_KP 0.3f
-#define LOAD_CTRL_KD 3.0f
+#define LOAD_CTRL_KP 3.0f
+#define LOAD_CTRL_KD 90.0f
 #define LOAD_CLAMP_SPEED  35000.0f
 #define LOAD_ERROR_MARGIN 7.0f
 #define LOAD_ACCEL_FREE   10000.0f

@@ -209,7 +209,7 @@ struct Controller loadframe0 = {
 	.actuator = &actframe0,
 
 	.kp = LOAD_CTRL_KP,
-	.kd = LOAD_CTRL_KP,
+	.kd = LOAD_CTRL_KD,
 
 	.maxError = LOAD_ERROR_MARGIN,
 	.freeAccel = LOAD_ACCEL_FREE,
