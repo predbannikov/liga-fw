@@ -10,6 +10,7 @@
 void Controller_Set(struct Controller *controller, float setPoint)
 {
 	controller->setPoint = setPoint;
+	controller->sourceSetPoint = setPoint;
 }
 
 void Controller_SetTunings(struct Controller *controller, float kp, float ki, float kd)
@@ -62,15 +63,29 @@ void Controller_Exec(struct Controller *controller)
 		const float input = Sensor_Read(controller->sensor);
 		const float error = controller->setPoint - input;
 
-		if(fabsf(error) < controller->maxError) {
-			Stepper_Stop(controller->actuator);
+//			if(fabsf(error) < controller->maxError) {
+//						Stepper_Stop(controller->actuator);
+//
+//					} else
+			if (controller->counter >= 5) {
+//				if(controller->fast)
+					controller->active = FALSE;
+					controller->direction = 0;
+					controller->counter = 0;
+			}
 
-			if(controller->fast)
-				controller->fast = FALSE;
-
-		} else if(!controller->fast && fabsf(error) < controller->maxError * 2.0f) {
+//		if(!controller->fast && fabsf(error) < controller->maxError * 2.0f) {
+		if(fabsf(error) < controller->maxError * 2.0f) {
 			/* Enter slow mode */
-			Stepper_SetSpeed(controller->actuator, copysignf(STEPPER_SLOWEST_SPEED, error));
+			//Stepper_SetSpeed(controller->actuator, copysignf(STEPPER_SLOWEST_SPEED, error));
+			controller->counter++;
+			if (controller->direction == 0) {
+				controller->setPoint = 500;
+				controller->direction = 1;
+			} else {
+				controller->setPoint = controller->sourceSetPoint;
+				controller->direction = 0;
+			}
 
 		} else {
 			const float dInput = input - controller->prevInput;

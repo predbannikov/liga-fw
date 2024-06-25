@@ -33,6 +33,10 @@ struct Controller
 
 	int active;
 	int fast;
+
+	int counter;
+	int direction;
+	float sourceSetPoint;
 };
 
 void Controller_Set(struct Controller *controller, float setPoint);

@@ -23,13 +23,14 @@
 #define VOLUM_ACCEL_FREE   10000.0f
 #define VOLUM_ACCEL_LOCKED 3000.0f
 
+
 /* Load frame coefficients */
-#define LOAD_CTRL_KP 0.3f
+#define LOAD_CTRL_KP 100.3f
 #define LOAD_CTRL_KD 3.0f
-#define LOAD_CLAMP_SPEED  2000.0f
-#define LOAD_ERROR_MARGIN 5.0f
-#define LOAD_ACCEL_FREE   10000.0f
-#define LOAD_ACCEL_LOCKED 5000.0f
+#define LOAD_CLAMP_SPEED  10000.0f
+#define LOAD_ERROR_MARGIN 50.0f
+#define LOAD_ACCEL_FREE   30000.0f
+#define LOAD_ACCEL_LOCKED 30000.0f
 
 /* Shear device specific coefficients */
 #define SHEAR_CTRL_KP 10.0f
