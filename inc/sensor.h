@@ -13,7 +13,10 @@ struct Sensor
 
   struct Calibration calibration;
   float offset;
+  uint32_t UptimeMillis;
+
 };
+
 
 void Sensor_Init(struct Sensor *sensor);
 void Sensor_Null(struct Sensor *sensor);

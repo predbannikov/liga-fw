@@ -9,9 +9,11 @@
 #include "objects.h"
 #include "stm32f3xx.h"
 #include "controller.h"
+#include "math.h"
 
 static void sensors_init(void)
 {
+
 	SDADC_InitDma(&sdadc1);
 	SDADC_InitDma(&sdadc3);
 
@@ -30,13 +32,35 @@ static void steppers_init(void)
 		GPIO_SetPin(stepper->dirPort, stepper->dirPin);
 		GPIO_SetPin(stepper->enablePort, stepper->enablePin);
 	}
+	CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk; // Разрешаем TRACE
+	DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk; // Разрешаем счетчик тактов
+	DWT->CYCCNT = 0; // Обнуляем счетчик
 }
 
 static void controllers_init(void)
 {
 	for(int i = CtrlBase; i < FuncEnd; ++i) {
 		struct Controller *controller = (struct Controller*)functions[i];
-
+		float step = 0.0;
+		float max = 0.0;
+		float scale = 2.7f;
+		for (int i = 0; i < 50; i++) {
+			step += 0.02f;
+			controller->table[i] = pow(sin((step) * 1.57f), scale);
+			if (controller->table[i] > max)
+				max = controller->table[i];
+		}
+		step = 0.0;
+		for (int i = 50; i < 100; i++) {
+			step += 0.02f;
+			controller->table[i] = pow(cos((step) * 1.57f), scale);
+			if (controller->table[i] > max)
+				max = controller->table[i];
+		}
+		for (int i = 0; i < 100; i++) {
+			controller->table[i] = controller->table[i] / max;
+		}
+		controller->stateTest = 0;
 		Stepper_SetAcceleration(controller->actuator, controller->freeAccel);
 		Stepper_SetSpeed(controller->actuator, 0);
 	}

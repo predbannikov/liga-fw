@@ -9,6 +9,9 @@ enum ControllerFlags {
 	ControllerFast   = 1 << 1
 };
 
+enum STATE {STATE_ADJUST, STATE_PREP, STATE_START, STATE_STOP};
+enum STATE_DIRECTION {STATE_DOWN, STATE_UP};
+
 struct Controller
 {
 	struct Sensor *sensor;
@@ -37,6 +40,15 @@ struct Controller
 	int counter;
 	int direction;
 	float sourceSetPoint;
+	int state;
+	int counterReadingValues;
+	float table[100];
+	float time;
+	float k;
+	int indexCalc;
+	int stateTest;
+	float valueK;
+	int state_direction;
 };
 
 void Controller_Set(struct Controller *controller, float setPoint);

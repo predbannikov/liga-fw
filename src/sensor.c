@@ -23,6 +23,21 @@ void Sensor_SetOffset(struct Sensor *sensor, float offset)
 
 float Sensor_Read(struct Sensor *sensor)
 {
+
+//	uint32_t dwt = DWT->CYCCNT;
+//	float sec = (float) dwt / 100000. * 1.32;
+//	return sec; // Читаем счетчик тактов
+
+
+//	uint32_t ms = sensor->UptimeMillis;
+//	uint32_t st = SysTick->VAL;
+//	if (ms != sensor->UptimeMillis)
+//	{
+//		ms = sensor->UptimeMillis;
+//		st = SysTick->VAL;
+//	}
+//	return (float)(ms * 1000 - st / ((SysTick->LOAD + 1) / 1000))*1000.;
+
 	return (float)Sensor_ReadRaw(sensor) * sensor->calibration.slope +
 			sensor->calibration.intercept - sensor->offset;
 }

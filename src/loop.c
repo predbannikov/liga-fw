@@ -61,7 +61,14 @@ void Loop_CommandExec(void)
 	case Sensor:
 		switch(opcode) {
 		case SensorRead:
-			modbusData.func[func].f = Sensor_Read(get_sensor(func));
+			if (func == SensDef0)
+			{
+				ctrl = get_controller(CtrlLoad0);
+				modbusData.func[func].f = ctrl->valueK * 1000.;
+
+			} else {
+				modbusData.func[func].f = Sensor_Read(get_sensor(func));
+			}
 			break;
 
 		case SensorReadRaw:

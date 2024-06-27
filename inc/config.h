@@ -25,10 +25,10 @@
 
 
 /* Load frame coefficients */
-#define LOAD_CTRL_KP 100.3f
+#define LOAD_CTRL_KP 30.0f
 #define LOAD_CTRL_KD 3.0f
-#define LOAD_CLAMP_SPEED  10000.0f
-#define LOAD_ERROR_MARGIN 50.0f
+#define LOAD_CLAMP_SPEED  13000.0f
+#define LOAD_ERROR_MARGIN 10.0f
 #define LOAD_ACCEL_FREE   30000.0f
 #define LOAD_ACCEL_LOCKED 30000.0f
 

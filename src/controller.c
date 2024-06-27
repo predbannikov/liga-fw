@@ -11,6 +11,9 @@ void Controller_Set(struct Controller *controller, float setPoint)
 {
 	controller->setPoint = setPoint;
 	controller->sourceSetPoint = setPoint;
+    DWT->CYCCNT = 0U; // обнуляем счётчик
+	controller->state = STATE_ADJUST;
+	controller->counterReadingValues = 0;
 }
 
 void Controller_SetTunings(struct Controller *controller, float kp, float ki, float kd)
@@ -42,7 +45,9 @@ void Controller_Lock(struct Controller *controller, int flags)
 		Stepper_SetAcceleration(controller->actuator, controller->freeAccel);
 		Stepper_Stop(controller->actuator);
 
-		controller->active = FALSE;
+//		controller->active = FALSE;		// Если убрать controller->state = STATE_STOP переключение состояния, не забыть раскоментировать этот кусок
+		controller->state = STATE_STOP;
+
 	}
 }
 
@@ -60,49 +65,112 @@ void Controller_Exec(struct Controller *controller)
 	} else {
 		controller->prevTime = time;
 
+
+		uint32_t dwt = DWT->CYCCNT;
+		double sec = (double) dwt / 100000000. * 1.32;
+
 		const float input = Sensor_Read(controller->sensor);
 		const float error = controller->setPoint - input;
 
-//			if(fabsf(error) < controller->maxError) {
-//						Stepper_Stop(controller->actuator);
-//
-//					} else
-			if (controller->counter >= 5) {
-//				if(controller->fast)
-					controller->active = FALSE;
-					controller->direction = 0;
-					controller->counter = 0;
-			}
+		const float dInput = input - controller->prevInput;
 
-//		if(!controller->fast && fabsf(error) < controller->maxError * 2.0f) {
-		if(fabsf(error) < controller->maxError * 2.0f) {
-			/* Enter slow mode */
-			//Stepper_SetSpeed(controller->actuator, copysignf(STEPPER_SLOWEST_SPEED, error));
-			controller->counter++;
-			if (controller->direction == 0) {
-				controller->setPoint = 500;
-				controller->direction = 1;
+
+		switch (controller->state) {
+		case STATE_ADJUST:
+			if (input > 30) {
+				DWT->CYCCNT = 0U;
+				controller->state = STATE_PREP;
+				Stepper_Stop(controller->actuator);
 			} else {
-				controller->setPoint = controller->sourceSetPoint;
-				controller->direction = 0;
+				float speed = controller->kp * error - dInput * controller->kd;
+				float clampSpeedAdjust = (float) controller->clampSpeed / 2.;
+				if(fabsf(speed) > clampSpeedAdjust) {
+					speed = copysignf(clampSpeedAdjust, speed);
+				}
+				Stepper_SetSpeed(controller->actuator, speed);
 			}
+			break;
 
-		} else {
-			const float dInput = input - controller->prevInput;
+		case STATE_PREP:
+			if (sec > 1.0 ) {
+				controller->state = STATE_START;
+				controller->time = 1.f;
+				DWT->CYCCNT = 0U;
+				controller->k = 1.f / controller->time;
+				controller->state_direction = STATE_DOWN;
+			}
+			break;
 
-#if CONTROLLER_INTEGRAL_ENABLE
-			const float speed = controller->kp * error + controller->iTerm - dInput * controller->kd;
-#else
-			float speed = controller->kp * error - dInput * controller->kd;
-#endif
-			if(fabsf(speed) > controller->clampSpeed)
+		case STATE_START:
+			controller->counterReadingValues++;
+			if(fabsf(error) < controller->maxError * 2.0f || sec > controller->time) {
+				DWT->CYCCNT = 0U;
+				controller->counter++;
+				if (controller->counter >= 25) {
+						controller->state = STATE_STOP;
+				}
+				if (controller->direction == 0) {
+					controller->setPoint = 300;
+					controller->direction = 1;
+					controller->state_direction = STATE_UP;
+				} else {
+					controller->setPoint = controller->sourceSetPoint;
+					controller->direction = 0;
+					controller->state_direction = STATE_DOWN;
+				}
+
+			} else {
+				controller->indexCalc = (int)(sec * controller->k * 100);
+				controller->valueK = controller->table[controller->indexCalc] + 0.00001;
+				float speed = 0.0f;
+				float PID_kp;
+				switch (controller->state_direction) {
+				case STATE_DOWN:
+	//				float calcError = controller->valueK * error;
+	//				speed = controller->kp * calcError - dInput * controller->kd;
+
+//					PID_kp = controller->kp;
+//					PID_kp *= controller->valueK;
+//					speed = PID_kp * error - dInput * controller->kd;
+
+					speed = controller->kp * error - dInput * controller->kd;
+////					speed = error - dInput;
+					speed *= controller->valueK;
+					break;
+
+				case STATE_UP:
+	//				float calcError = controller->valueK * error;
+	//				speed = controller->kp * calcError - dInput * controller->kd;
+
+//					PID_kp = controller->kp;
+//					PID_kp *= controller->valueK;
+//					speed = PID_kp * error - dInput * controller->kd;
+
+					speed = controller->kp * error - dInput * controller->kd;
+////					speed = error - dInput;
+					speed *= controller->valueK;
+				break;
+				}
+
+				if(fabsf(speed) > controller->clampSpeed) {
+					speed = copysignf(controller->clampSpeed, speed);
+				}
+				Stepper_SetSpeed(controller->actuator, speed);
+			}
+			break;
+
+		case STATE_STOP:
+			controller->stateTest = 0;
+			controller->direction = 0;
+			controller->counter = 0;
+			controller->active = FALSE;
+			controller->counterReadingValues = 0;
+			float speed = -10000000.;
+			if(fabsf(speed) > controller->clampSpeed) {
 				speed = copysignf(controller->clampSpeed, speed);
-
-#if CONTROLLER_INTEGRAL_ENABLE
-			else
-				controller->iTerm += error * controller->ki;
-#endif
+			}
 			Stepper_SetSpeed(controller->actuator, speed);
+			break;
 		}
 
 		controller->prevInput = input;
